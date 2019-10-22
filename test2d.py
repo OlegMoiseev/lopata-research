@@ -1,6 +1,5 @@
 import serial
 import time
-import matplotlib as plt
 import csv
 
 arduino = serial.Serial('/dev/ttyUSB0', 115200)  # Establish the connection on a specific port
@@ -11,6 +10,7 @@ for i in range(10):
 
 a_x, a_y, a_z, t = [], [], [], []
 start_time = time.time()
+collecting_time = 3
 
 print('Start moving!')
 while not skip:  # 7 secs!!!
@@ -20,14 +20,14 @@ while not skip:  # 7 secs!!!
     a_y.append(ay)
     a_z.append(az)
     t.append(time.time() - start_time)
-    if time.time() - start_time > 7:
+    if time.time() - start_time > collecting_time:
         skip = True
 print("End moving")
+arduino.close()
 
-with open('data.csv', 'w', newline='') as csvfile:
+with open('data2.csv', 'w', newline='') as csvfile:
     datawriter = csv.writer(csvfile)
-
+    datawriter.writerow(['a_x', 'a_y', 'a_z', 't'])
     for i in range(len(a_x)):
         datawriter.writerow([a_x[i], a_y[i], a_z[i], t[i]])
 
-arduino.close()
