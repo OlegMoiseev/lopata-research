@@ -11,13 +11,19 @@ def threshold_filter(data, threshold):
         if -threshold < data[i] < threshold:
             data[i] = 0
 
-if __name__ == '__main__':
-    data = pd.read_csv('data1.csv', index_col=False, dtype=float)
 
-    # min_x = -0.004600349544072949  # mean
+if __name__ == '__main__':
+    data = pd.read_csv('fanuc_2_square_low.csv', index_col=False, dtype=float)
+
+    ''' min_x = -0.004600349544072949  # mean
     # min_y = -0.010230676291793313
     min_x = -0.00458  # median
-    min_y = -0.01025
+    min_y = -0.01025'''
+    # min_x = -0.001030491935483871  # mean
+    # min_y = -0.0029391290322580647
+    min_x = 0.00244
+    min_y = -0.00592
+
     a_x = data['a_x'] - min_x
     a_y = data['a_y'] - min_y
     a_z = data['a_z']
@@ -26,11 +32,7 @@ if __name__ == '__main__':
     threshold_filter(a_x, min_x)
     threshold_filter(a_y, min_y)
 
-    # pair_x = []
-    # for i in range(len(a_x)):
-    #     pair_x.append([t[i], a_x[i]])
-
-    kernel_size = 109
+    kernel_size = 19
     a_x_filt = medfilt(a_x, kernel_size)
     a_y_filt = medfilt(a_y, kernel_size)
 
