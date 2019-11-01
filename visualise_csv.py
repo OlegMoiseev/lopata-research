@@ -13,7 +13,7 @@ def threshold_filter(data, threshold):
 
 
 if __name__ == '__main__':
-    data = pd.read_csv('fanuc_2_square_low.csv', index_col=False, dtype=float)
+    data = pd.read_csv('16_0_0.csv', index_col=False, dtype=float)
 
     ''' min_x = -0.004600349544072949  # mean
     # min_y = -0.010230676291793313
