@@ -7,6 +7,8 @@ import json
 class CameraCalibration:
     def __init__(self, board_dimensional):
         self.board_size = board_dimensional
+        self.camera_matrix = None
+        self.distortion_coefficients = None
 
     def get_board_corners(self, images):
         stop_criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER,
@@ -15,8 +17,8 @@ class CameraCalibration:
         world_corners = []
         # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
         objp = np.zeros((self.board_size[0] * self.board_size[1], 3), np.float32)
-        objp[:, :2] = np.mgrid[0:self.board_size[0],
-                      0:self.board_size[1]].T.reshape(-1, 2)
+        # this is some kind of magic...
+        objp[:, :2] = np.mgrid[0:self.board_size[0], 0:self.board_size[1]].T.reshape(-1, 2)
         for image in images:
             found, corners = cv2.findChessboardCorners(image, self.board_size)
             if found:
@@ -60,8 +62,19 @@ class CameraCalibrationWI(CameraCalibration):
 
             json.dump(data, calib_file, indent="")
 
-    def load_camera_calibration(self):
-        pass
+    def load_camera_calibration(self, path_calibration):
+        with open(path_calibration, 'r') as calib_file:
+            data = json.load(calib_file)
+
+            self.camera_matrix = np.zeros((data['mat_rows'], data['mat_cols']))
+            for i in range(data['mat_rows']):
+                for j in range(data['mat_cols']):
+                    self.camera_matrix[i, j] = data['mat'][data['mat_cols'] * i + j]
+
+            self.distortion_coefficients = np.zeros((data['distortion_rows'], data['distortion_cols']))
+            for i in range(data['distortion_rows']):
+                for j in range(data['distortion_cols']):
+                    self.distortion_coefficients[i, j] = data['distortion'][data['distortion_cols'] * i + j]
 
     def calculate_blurriness(self, frame):
         return cv2.Laplacian(frame, cv2.CV_64F).var()
@@ -121,13 +134,22 @@ class CameraCalibrationWI(CameraCalibration):
                     break
         cv2.destroyWindow("Camera")
 
+    def undistort(self, image):
+        if self.distortion_coefficients is None or self.camera_matrix is None:
+            return image
+        return cv2.undistort(image, self.camera_matrix, self.distortion_coefficients)
+
 
 # 0 - камера на ноуте, 1 - камера подключенная
 flag = 2
 video_capture = cv2.VideoCapture(flag)
 
 cam_calib_w_i = CameraCalibrationWI((9, 6))
-cam_calib_w_i.camera_calibration_process(video_capture, 5)
+cam_calib_w_i.load_camera_calibration("CamCalib1.json")
+print(cam_calib_w_i.camera_matrix)
+print(cam_calib_w_i.distortion_coefficients)
+
+# cam_calib_w_i.camera_calibration_process(video_capture, 5)
 
 # # Check success
 # if not video_capture.isOpened():
