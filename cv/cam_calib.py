@@ -1,6 +1,7 @@
 import numpy as np
-import cv2
+import cv2.cv2 as cv2
 import glob
+import json
 
 
 class CameraCalibration:
@@ -26,7 +27,7 @@ class CameraCalibration:
 
     def calculate_intrinsic_parameters(self, calibration_images):
         chessboard_world_space_points, chessboard_image_space_points = self.get_board_corners(calibration_images)
-        success, self.camera_matrix, self.distortion_coefficients, rvec, tvec =\
+        success, self.camera_matrix, self.distortion_coefficients, rvec, tvec = \
             cv2.calibrateCamera(chessboard_world_space_points,
                                 chessboard_image_space_points,
                                 calibration_images[0].shape[::-1],
@@ -39,15 +40,25 @@ class CameraCalibrationWI(CameraCalibration):
 
     def save_camera_calibration(self, path_save):
         with open(path_save, 'w') as calib_file:
-            # TODO: ???
-            calib_file.write("3\n3\n")  # WTF???!!!
+            data = {'mat_rows': self.camera_matrix.shape[0],
+                    'mat_cols': self.camera_matrix.shape[1]}
 
-            for i in range(len(self.camera_matrix[0])):
-                for j in range(len(self.camera_matrix)):
-                    calib_file.write(str(self.camera_matrix[i, j]) + "\n")
-            calib_file.write(str(len(self.distortion_coefficients[0])) + "\n")
-            for i in range(len(self.distortion_coefficients[0])):
-                calib_file.write(str(self.distortion_coefficients[0, i]) + "\n")
+            mat = []
+            for i in range(data['mat_rows']):
+                for j in range(data['mat_cols']):
+                    mat.append(self.camera_matrix[i, j])
+            data['mat'] = mat
+
+            data['distortion_rows'] = self.distortion_coefficients.shape[0]
+            data['distortion_cols'] = self.distortion_coefficients.shape[1]
+
+            dist = []
+            for i in range(data['distortion_rows']):
+                for j in range(data['distortion_cols']):
+                    dist.append(self.distortion_coefficients[i, j])
+            data['distortion'] = dist
+
+            json.dump(data, calib_file, indent="")
 
     def load_camera_calibration(self):
         pass
@@ -68,7 +79,11 @@ class CameraCalibrationWI(CameraCalibration):
         cv2.destroyWindow("Focus setting")
 
     def camera_calibration_images_from_folder(self, folder_name, count_of_images):
-        pass
+        calibration_images = []
+        images = glob.glob(folder_name + '*.jpg')
+        for i in range(count_of_images):
+            calibration_images.append(cv2.cvtColor(images[i], cv2.COLOR_BGR2GRAY))
+        self.calculate_intrinsic_parameters(calibration_images)
 
     def camera_calibration_process(self, camera, count_of_frames):
         cv2.namedWindow("Camera", cv2.WINDOW_AUTOSIZE)
@@ -96,7 +111,7 @@ class CameraCalibrationWI(CameraCalibration):
                         print('Started calibration...')
                         self.calculate_intrinsic_parameters(saved_images)
                         print('Saving calibration parameters...')
-                        self.save_camera_calibration("CamCalib.txt")
+                        self.save_camera_calibration("CamCalib.json")
                         print("Successfully saved!")
                         break
 
@@ -108,7 +123,7 @@ class CameraCalibrationWI(CameraCalibration):
 
 
 # 0 - камера на ноуте, 1 - камера подключенная
-flag = 0
+flag = 2
 video_capture = cv2.VideoCapture(flag)
 
 cam_calib_w_i = CameraCalibrationWI((9, 6))
