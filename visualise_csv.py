@@ -12,12 +12,10 @@ def threshold_filter(data, threshold):
             data[i] = 0
 
 if __name__ == '__main__':
-    data = pd.read_csv('data1.csv', index_col=False, dtype=float)
+    data = pd.read_csv('data/hand_strait/data_strait_double.csv', index_col=False, dtype=float)
 
-    # min_x = -0.004600349544072949  # mean
-    # min_y = -0.010230676291793313
-    min_x = -0.00458  # median
-    min_y = -0.01025
+    min_x = 0.00549
+    min_y = -0.00116
     a_x = data['a_x'] - min_x
     a_y = data['a_y'] - min_y
     a_z = data['a_z']
@@ -30,16 +28,18 @@ if __name__ == '__main__':
     # for i in range(len(a_x)):
     #     pair_x.append([t[i], a_x[i]])
 
-    kernel_size = 109
+    kernel_size = 79
     a_x_filt = medfilt(a_x, kernel_size)
     a_y_filt = medfilt(a_y, kernel_size)
 
     plt.figure(dpi=300)
     plt.subplot(221)
+    plt.title("Accel X")
     plt.plot(t, a_x, 'b')
     plt.plot(t, a_x_filt, 'r')
 
     plt.subplot(222)
+    plt.title("Accel Y")
     plt.plot(t, a_y, 'b')
     plt.plot(t, a_y_filt, 'r')
 
@@ -52,6 +52,7 @@ if __name__ == '__main__':
         u_y.append(u_y[i - 1] + a_y_filt[i] * t[i])
 
     plt.subplot(223)
+    plt.title("Speed X, Y")
     plt.plot(t, u_x, 'b')
     plt.plot(t, u_y, 'r')
 
@@ -64,6 +65,7 @@ if __name__ == '__main__':
         s_y.append(s_y[i - 1] + u_y[i] * t[i])
 
     plt.subplot(224)
+    plt.title("Coordinate X, Y")
     plt.plot(t, s_x, 'b')
     plt.plot(t, s_y, 'r')
 

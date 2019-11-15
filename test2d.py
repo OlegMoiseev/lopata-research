@@ -10,7 +10,7 @@ for i in range(10):
 
 a_x, a_y, a_z, t = [], [], [], []
 start_time = time.time()
-collecting_time = 3
+collecting_time = 10
 
 print('Start moving!')
 while not skip:  # 7 secs!!!
@@ -25,9 +25,8 @@ while not skip:  # 7 secs!!!
 print("End moving")
 arduino.close()
 
-with open('data2.csv', 'w', newline='') as csvfile:
+with open('data/hand_strait/data_strait_double.csv', 'w', newline='') as csvfile:
     datawriter = csv.writer(csvfile)
     datawriter.writerow(['a_x', 'a_y', 'a_z', 't'])
     for i in range(len(a_x)):
         datawriter.writerow([a_x[i], a_y[i], a_z[i], t[i]])
-

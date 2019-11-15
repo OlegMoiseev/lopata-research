@@ -31,10 +31,18 @@ class CameraCalibration:
         chessboard_undistorted_points, chessboard_distorted_points = self.get_board_corners(calibration_images)
         success, self.camera_matrix, self.distortion_coefficients, \
         rotation_vectors, translation_vectors = \
-            cv2.calibrateCamera(chessboard_undistorted_points,  # calibrated image
-                                chessboard_distorted_points,  # raw image
+            cv2.calibrateCamera(chessboard_undistorted_points,  # calibrated image - object points
+                                chessboard_distorted_points,  # raw image - image points
                                 calibration_images[0].shape[::-1],
                                 None, None)
+
+        mean_error = 0
+        for i in range(len(chessboard_undistorted_points)):
+            imgpoints2, _ = cv2.projectPoints(chessboard_undistorted_points[i], rotation_vectors[i],
+                                              translation_vectors[i], self.camera_matrix, self.distortion_coefficients)
+            error = cv2.norm(chessboard_distorted_points[i], imgpoints2, cv2.NORM_L2) / len(imgpoints2)
+            mean_error += error
+        print("Total error: ", mean_error / len(chessboard_undistorted_points))
 
 
 class CameraCalibrationWI(CameraCalibration):
@@ -96,8 +104,10 @@ class CameraCalibrationWI(CameraCalibration):
         calibration_images = []
         images = glob.glob(folder_name + '*.jpg')
         for i in range(count_of_images):
-            calibration_images.append(cv2.cvtColor(images[i], cv2.COLOR_BGR2GRAY))
+            img = cv2.imread(images[i])
+            calibration_images.append(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY))
         self.calculate_intrinsic_parameters(calibration_images)
+        self.save_camera_calibration("CamCalib.json")
 
     def camera_calibration_process(self, camera, count_of_frames):
         cv2.namedWindow("Camera", cv2.WINDOW_AUTOSIZE)
@@ -122,10 +132,16 @@ class CameraCalibrationWI(CameraCalibration):
                     saved_images.append(temp)
                     print(str(count_of_good_frames) + '/' + str(count_of_frames))
                     if len(saved_images) == count_of_frames:
-                        print('Started calibration...')
+                        print('Start saving images...')
+                        for i in range(len(saved_images)):
+                            cv2.imwrite('images/' + str(i) + '.jpg', saved_images[i])
+
+                        print('Start calibration...')
                         self.calculate_intrinsic_parameters(saved_images)
+
                         print('Saving calibration parameters...')
                         self.save_camera_calibration("CamCalib.json")
+
                         print("Successfully saved!")
                         break
 
@@ -143,120 +159,18 @@ class CameraCalibrationWI(CameraCalibration):
 
 if __name__ == '__main__':
     # 0 - камера на ноуте, >=1 - камера подключенная
-    flag = 2
+    flag = 0
     video_capture = cv2.VideoCapture(flag)
 
     cam_calib_w_i = CameraCalibrationWI((9, 6))
-    cam_calib_w_i.load_camera_calibration("CamCalib1.json")
-    print(cam_calib_w_i.camera_matrix)
-    print(cam_calib_w_i.distortion_coefficients)
+    # cam_calib_w_i.camera_calibration_images_from_folder('images/', 10)
 
-    # cam_calib_w_i.camera_calibration_process(video_capture, 5)
+    cam_calib_w_i.load_camera_calibration('CamCalib.json')
+    # cam_calib_w_i.camera_calibration_process(video_capture, 10)
+    for i in range(10):
+        name_raw = 'images/' + str(i) + '.jpg'
+        name_undistort = 'images/' + str(i) + '_1.jpg'
+        img = cv2.imread(name_raw)
+        img_undistort = cam_calib_w_i.undistort(img)
+        cv2.imwrite(name_undistort, img_undistort)
 
-    # # Check success
-    # if not video_capture.isOpened():
-    #     raise Exception("Could not open video device")
-    #
-    # # prepare object points
-    # nx = 9  # number of inside corners in x
-    # ny = 6  # number of inside corners in y
-    #
-    # # termination criteria
-    # criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-    #
-    # # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
-    # objp = np.zeros((nx*ny, 3), np.float32)
-    # objp[:, :2] = np.mgrid[0:nx, 0:ny].T.reshape(-1, 2)
-    #
-    # # Arrays to store object points and image points from all the images.
-    # objpoints = []      # 3d point in real world space
-    # imgpoints = []      # 2d points in image plane.
-    # path_calib = '/ph/calib/'
-    # path_raw = '/ph/raw/'
-    #
-    # count = 0
-    # ret2 = False
-    # while True:
-    #     if cv2.waitKey(1) & 0xFF == ord('q'):
-    #         break
-    #     ret1, frame = video_capture.read()
-    #     img = cv2.cvtColor(frame.copy(), cv2.COLOR_BGR2GRAY)
-    #     if ret2:
-    #         if cv2.waitKey(1) & 0xFF == ord('f'):
-    #             cv2.imwrite(path_raw + "frame" + str(count) + ".jpg", frame)
-    #             count += 1
-    #             print('taken frame')
-    #     else:
-    #         if cv2.waitKey(1) & 0xFF == ord('f'):
-    #             print("i don't see chessboard")
-    #         ret2, corners = cv2.findChessboardCorners(img, (nx, ny), None)
-    #
-    #     fm = cv2.Laplacian(frame, cv2.CV_64F).var()
-    #     frame = cv2.drawChessboardCorners(frame, (7, 6), corners, True)
-    #
-    #     cv2.putText(frame, "{:12.4f}".format(fm), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (150, 150, 150), lineType=cv2.LINE_AA)
-    #     cv2.imshow('frame', frame)
-    #
-    # images = glob.glob(path_raw + '*.jpg')
-    #
-    # print('started watch images')
-    # count = 0
-    # for fname in images:
-    #     print("next image")
-    #     img = cv2.imread(fname)
-    #     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    #
-    #     ret, corners = cv2.findChessboardCorners(gray, (nx, ny), None)
-    #     # If found, add object points, image points (after refining them)
-    #     if ret:
-    #         print('i see')
-    #         objpoints.append(objp)
-    #         corners2 = cv2.cornerSubPix(gray, corners, (19, 19), (-1, -1), criteria)
-    #         imgpoints.append(corners2)
-    #         # img = cv2.drawChessboardCorners(img, (nx, ny), corners2, ret)
-    #         # cv2.imshow('img', img)
-    #
-    # print('i had saw all images')
-    # ret, mtx, dist, rotation_vectors, translation_vectors = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
-    #
-    # # writing coef into coef.txt
-    # # (описание коэффициентов - добавить - не будь Тимуром)
-    # file = open("coef.txt", "w+")
-    # strr = "3\n3\n"
-    # for i in range(len(mtx[0])):
-    #     for j in range(len(mtx)):
-    #         strr += str(mtx[i, j]) + "\n"
-    # strr += str(len(dist[0])) + "\n"
-    # for i in range(len(dist[0])):
-    #     strr += str(dist[0, i]) + "\n"
-    # file.write(strr)
-    # file.close()
-    #
-    # h, w = img.shape[:2]
-    # newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
-    #
-    # count = 0
-    # for fname in images:
-    #     dst = cv2.undistort(cv2.imread(fname), mtx, dist, None, newcameramtx)
-    #     x, y, w, h = roi
-    #     dst = dst[y:y + h, x:x + w]
-    #     cv2.imwrite(path_calib + "calib" + str(count) + ".jpg", dst)
-    #     count += 1
-    #
-    # while True:
-    #     if cv2.waitKey(1) & 0xFF == ord('q'):
-    #         break
-    #     ret, frame = video_capture.read()
-    #     # undistortion
-    #     dst = cv2.undistort(frame, mtx, dist, None, newcameramtx)
-    #     # mapx, mapy = cv2.initUndistortRectifyMap(mtx, dist, None, newcameramtx, (w, h), 5)
-    #     # dst = cv2.remap(img, mapx, mapy, cv2.INTER_LINEAR)
-    #     # crop the image
-    #     x, y, w, h = roi
-    #     dst = dst[y:y + h, x:x + w]
-    #     cv2.imshow('frame', dst)
-    #
-    # # Close device
-    # video_capture.release()
-    # cv2.destroyAllWindows()
-    #
