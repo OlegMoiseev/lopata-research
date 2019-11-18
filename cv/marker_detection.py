@@ -23,6 +23,7 @@ if __name__ == '__main__':
             rvecs, tvecs, _objPoints = cv2.aruco.estimatePoseSingleMarkers(corners, 0.05,
                                                                            cam_calib_w_i.camera_matrix,
                                                                            cam_calib_w_i.distortion_coefficients)
+            print("Translate vector:", tvecs)
             frame = cv2.aruco.drawAxis(frame, cam_calib_w_i.camera_matrix, cam_calib_w_i.distortion_coefficients,
                                        rvecs, tvecs, 0.05)
 
