@@ -45,7 +45,9 @@ if __name__ == '__main__':
     plt.plot(t, s_y_filt, 'g')
 
     f = fig.add_subplot(235, projection='3d')
-    f.set_zlim3d(0, 0.5)
+    f.set_zlim3d(0, 8)
+    # f.set_xlim3d(-0.1, 0.5)
+    # f.set_ylim3d(-0.1, 0.5)
 
     plt.plot(xs=s_x_filt, ys=s_y_filt, zs=s_z_filt)
 
