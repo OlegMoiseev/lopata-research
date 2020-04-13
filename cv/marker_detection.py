@@ -2,6 +2,8 @@ import cv2
 from cv.cam_calib import *
 import csv
 import time
+from vpython import *
+from test_vis import create_scene
 
 
 def get_marker(id):
@@ -47,14 +49,37 @@ class PoseMeasurer:
         return frame
 
 
+def get_rotation_from_vecs(rvecs):
+    rotM = np.zeros(shape=(3, 3))
+    cv2.Rodrigues(rvecs[0][0], rotM, jacobian=0)
+    ypr = cv2.RQDecomp3x3(rotM)
+    return ypr[0]
+
+
+def euler_2_cartesian(roll, pitch, yaw):
+    x = cos(yaw) * cos(pitch)
+    y = sin(yaw) * cos(pitch)
+    z = sin(pitch)
+    return x, y, z
+
+
 if __name__ == '__main__':
     PoseMeasurer = PoseMeasurer('CamCalib.json', 2)
     cv2.namedWindow("Camera", cv2.WINDOW_AUTOSIZE)
+
+    create_scene()
+    ar = arrow(pos=vector(1, 1, 1), axis=vector(0, 0, 0), shaftwidth=0.1)
 
     while True:
         frame, corners, ids, rvecs, tvecs = PoseMeasurer.get_pose_markers()
         if rvecs is not None and tvecs is not None:
             frame = PoseMeasurer.draw_markers(frame, corners, ids, rvecs, tvecs)
+            tmp = get_rotation_from_vecs(rvecs)
+            roll, pitch, yaw = radians(tmp[2]), radians(tmp[1]), radians(tmp[0])
+            x, y, z = euler_2_cartesian(roll, pitch, yaw)
+
+            ar.pos = vector(z, -y, -x)
+            ar.axis = vector(-z, y, x)
 
         cv2.imshow("Camera", frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
