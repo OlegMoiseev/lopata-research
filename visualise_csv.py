@@ -13,7 +13,7 @@ def threshold_filter(data, threshold):
 
 
 if __name__ == '__main__':
-    data = pd.read_csv('data/hand_camera/data_random.csv', index_col=False, dtype=float)
+    data = pd.read_csv('data/up.csv', index_col=False, dtype=float)
 
     min_x = 0.00549
     min_y = -0.00116

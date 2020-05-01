@@ -2,11 +2,13 @@ from vpython import *
 
 
 def create_scene():
-    scene2 = canvas(x=0, y=0, forward=vector(-0.3, -0.3, -0.4), background=color.white)
+    scene2 = canvas(x=0, y=0, forward=vector(-1, -1, -1), background=color.white)
 
     x_axis = arrow(canvas=scene2, pos=vector(0, 0, 0), axis=vector(10, 0, 0), shaftwidth=0.1, color=color.red)
     y_axis = arrow(canvas=scene2, pos=vector(0, 0, 0), axis=vector(0, 10, 0), shaftwidth=0.1, color=color.green)
     z_axis = arrow(canvas=scene2, pos=vector(0, 0, 0), axis=vector(0, 0, 10), shaftwidth=0.1, color=color.blue)
+
+    return scene2
 
 
 if __name__ == '__main__':
