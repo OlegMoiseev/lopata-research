@@ -213,7 +213,7 @@ def calc_coeffs():
     allCorners = []
     allIds = []
 
-    count_of_frames = 3
+    count_of_frames = 15
     count_of_good_frames = 0
     saved_images = []
 
@@ -234,7 +234,7 @@ def calc_coeffs():
                     allCorners.append(res2[1])
                     allIds.append(res2[2])
                     print(str(count_of_good_frames) + '/' + str(count_of_frames))
-                    saved_images.append(frame)
+                    saved_images.append(gray)
 
                 if count_of_good_frames == count_of_frames:
                     break
@@ -286,15 +286,15 @@ def load_camera_calibration(path_calibration):
 
 
 if __name__ == '__main__':
-    calc_coeffs()
-    # for i in range(3):
-    #     name_raw = 'images/' + str(i) + '.jpg'
-    #     name_undistort = 'images/' + str(i) + '_1.jpg'
-    #     img = cv2.imread(name_raw)
-    #     camera_matrix, distortion_coefficients = load_camera_calibration("CamCalib.json")
-    #     img_undistort = cv2.undistort(img, camera_matrix, distortion_coefficients)
-    #
-    #     cv2.imwrite(name_undistort, img_undistort)
+    # calc_coeffs()
+    for i in range(15):
+        name_raw = 'images/' + str(i) + '.jpg'
+        name_undistort = 'images/' + str(i) + '_1.jpg'
+        img = cv2.imread(name_raw)
+        camera_matrix, distortion_coefficients = load_camera_calibration("CamCalib.json")
+        img_undistort = cv2.undistort(img, camera_matrix, distortion_coefficients)
+
+        cv2.imwrite(name_undistort, img_undistort)
 
 
 

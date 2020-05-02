@@ -27,7 +27,7 @@ def get_markers_files(num_of_markers):
 
 
 class PoseMeasurer:
-    def __init__(self, calib_file_path, num_camera=2):
+    def __init__(self, calib_file_path, num_camera=0):
         self.cam_calib_w_i = CameraCalibrationWI((9, 6))
         self.cam_calib_w_i.load_camera_calibration(calib_file_path)
         self.marker_dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
@@ -79,7 +79,7 @@ def mv_avg_filt(arr, new_elem):
 
 
 if __name__ == '__main__':
-    PoseMeasurer = PoseMeasurer('CamCalib.json', 2)
+    PoseMeasurer = PoseMeasurer('CamCalib.json', 0)
     cv2.namedWindow("Camera", cv2.WINDOW_AUTOSIZE)
 
     scene = create_scene()
