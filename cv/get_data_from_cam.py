@@ -17,6 +17,7 @@ if __name__ == '__main__':
     angle = 15
     ser.write((str(angle) + '\n').encode())
 
+
     while True:
         frame, corners, ids, rvecs, tvecs = PoseMeasurer.get_pose_markers()
         new_frame = frame.copy()
@@ -24,11 +25,21 @@ if __name__ == '__main__':
             try:
                 frame = PoseMeasurer.draw_markers(frame, corners, ids, rvecs, tvecs)
                 if cv2.waitKey(1) & 0xFF == ord(' '):
-                    print("Captured with angle " + str(angle))
-                    cv2.imwrite('./images/' + str(angle) + '.jpg', new_frame)
-                    angle += 5
-                    ser.write((str(angle) + '\n').encode())
 
+                    i = 0
+                    while i < 10:
+                        frame, corners, ids, rvecs, tvecs = PoseMeasurer.get_pose_markers()
+                        if rvecs is not None and tvecs is not None:
+                            try:
+                                print("Captured with angle " + str(angle) + " num " + str(i))
+                                cv2.imwrite('./images/' + str(angle) + '_' + str(i) + '.jpg', frame)
+                                i += 1
+                            except Exception as ex:
+                                print(ex)
+                    angle += 5
+                    if angle > 180:
+                        break
+                    ser.write((str(angle) + '\n').encode())
 
 
             except Exception as ex:
