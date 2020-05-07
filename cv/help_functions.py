@@ -9,10 +9,14 @@ def get_marker(id):
     return cv2.aruco.drawMarker(marker_dict, id, 200)
 
 
+def get_marker_file(id_of_marker):
+    marker = get_marker(id_of_marker)
+    cv2.imwrite(str(id_of_marker) + '.jpg', marker)
+
+
 def get_markers_files(num_of_markers):
     for id in range(num_of_markers):  # 16 pieces, for ex
-        marker = get_marker(id)
-        cv2.imwrite(str(id) + '.jpg', marker)
+        get_marker_file(id)
 
 
 def write_3_vectors(vec_x, vec_y, vec_z, vec_time, file_name):
@@ -47,3 +51,7 @@ def mv_avg_filt(arr, new_elem):
     move_arr(arr)
     arr[-1] = new_elem
     return arr.mean()
+
+
+if __name__ == "__main__":
+    get_marker_file(3)

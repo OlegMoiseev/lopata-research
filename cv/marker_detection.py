@@ -22,8 +22,9 @@ class PoseMeasurerFromImage:
 
     def draw_markers(self, cam_frame, corners, ids, rvecs, tvecs):
         cam_frame = cv2.aruco.drawDetectedMarkers(cam_frame, corners, ids)
-        cam_frame = cv2.aruco.drawAxis(cam_frame, self.cam_calib_w_i.camera_matrix, self.cam_calib_w_i.distortion_coefficients,
-                                   rvecs, tvecs, 0.05)
+        for i in range(len(ids)):
+            cam_frame = cv2.aruco.drawAxis(cam_frame, self.cam_calib_w_i.camera_matrix, self.cam_calib_w_i.distortion_coefficients,
+                                           rvecs[i], tvecs[i], 0.05)
         return cam_frame
 
 
@@ -39,36 +40,34 @@ class PoseMeasurerFromCam(PoseMeasurerFromImage):
 
 
 if __name__ == '__main__':
-    PoseMeasurerFromImage = PoseMeasurerFromImage('CamCalib.json')
-    scene = create_scene()
-
-    height_img = 640
-    width_img = 480
-
-    for i in range(15, 185, 5):
-        print(i)
-        for j in range(10):
-            file_path = 'images/around/' + str(i) + '_' + str(j) + '.jpg'
-            frame = cv2.imread(file_path)
-            corners, ids, rvecs, tvecs = PoseMeasurerFromImage.get_pose_markers(frame)
-
-            coord = tvecs[0][0]
-            sphere(pos=vector(coord[0], coord[1], coord[2]), radius=0.005, color=color.red)
-
-        sleep(0.01)
-
-    # PoseMeasurerFromCam = PoseMeasurerFromCam('CamCalib.json')
-    # while True:
-    #     try:
-    #         corners, ids, rvecs, tvecs, image = PoseMeasurerFromCam.get_pose_markers_from_cam()
-    #         if rvecs is not None and tvecs is not None:
-    #             image = PoseMeasurerFromCam.draw_markers(image, corners, ids, rvecs, tvecs)
-    #             print(ids)
+    # PoseMeasurerFromImage = PoseMeasurerFromImage('CamCalib.json')
+    # scene = create_scene()
     #
-    #         cv2.imshow("Camera", image)
-    #     except:
-    #         pass
+    # height_img = 640
+    # width_img = 480
+    #
+    # for i in range(15, 185, 5):
+    #     print(i)
+    #     for j in range(10):
+    #         file_path = 'images/around/' + str(i) + '_' + str(j) + '.jpg'
+    #         frame = cv2.imread(file_path)
+    #         corners, ids, rvecs, tvecs = PoseMeasurerFromImage.get_pose_markers(frame)
+    #
+    #         coord = tvecs[0][0]
+    #         sphere(pos=vector(coord[0], coord[1], coord[2]), radius=0.005, color=color.red)
+    #
+    #     sleep(0.01)
 
-    #     if cv2.waitKey(1) & 0xFF == ord('q'):
-    #         break
-    # cv2.destroyWindow("Camera")
+    PoseMeasurerFromCam = PoseMeasurerFromCam('CamCalib.json')
+    while True:
+        try:
+            corners, ids, rvecs, tvecs, image = PoseMeasurerFromCam.get_pose_markers_from_cam()
+            if rvecs is not None and tvecs is not None:
+                image = PoseMeasurerFromCam.draw_markers(image, corners, ids, rvecs, tvecs)
+            cv2.imshow("Camera", image)
+        except:
+            pass
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    cv2.destroyWindow("Camera")
