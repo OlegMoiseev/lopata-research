@@ -1,7 +1,8 @@
 import cv2
-from cv.cam_calib import *
+from camera_calibration.cam_calib import *
 import csv
 from vpython import *
+import numpy as np
 
 
 def get_marker(id):
@@ -27,9 +28,9 @@ def write_3_vectors(vec_x, vec_y, vec_z, vec_time, file_name):
             datawriter.writerow([vec_x[i], vec_y[i], vec_z[i], vec_time[i]])
 
 
-def get_rotation_from_vecs(rvecs):
+def get_rotation_from_vecs(rvec):
     rotM = np.zeros(shape=(3, 3))
-    cv2.Rodrigues(rvecs[0][0], rotM, jacobian=0)
+    cv2.Rodrigues(rvec, rotM, jacobian=0)
     ypr = cv2.RQDecomp3x3(rotM)
     return ypr[0], rotM
 

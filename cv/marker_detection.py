@@ -1,5 +1,5 @@
 import cv2
-from cv.cam_calib import *
+from cv.camera_calibration.cam_calib import *
 from vpython import *
 from test_vis import create_scene
 
@@ -22,9 +22,10 @@ class PoseMeasurerFromImage:
 
     def draw_markers(self, cam_frame, corners, ids, rvecs, tvecs):
         cam_frame = cv2.aruco.drawDetectedMarkers(cam_frame, corners, ids)
-        for i in range(len(ids)):
-            cam_frame = cv2.aruco.drawAxis(cam_frame, self.cam_calib_w_i.camera_matrix, self.cam_calib_w_i.distortion_coefficients,
-                                           rvecs[i], tvecs[i], 0.05)
+        if ids is not None:
+            for i in range(len(ids)):
+                cam_frame = cv2.aruco.drawAxis(cam_frame, self.cam_calib_w_i.camera_matrix, self.cam_calib_w_i.distortion_coefficients,
+                                               rvecs[i], tvecs[i], 0.05)
         return cam_frame
 
 
@@ -40,7 +41,7 @@ class PoseMeasurerFromCam(PoseMeasurerFromImage):
 
 
 if __name__ == '__main__':
-    # PoseMeasurerFromImage = PoseMeasurerFromImage('CamCalib.json')
+    # PoseMeasurerFromImage = PoseMeasurerFromImage('camera_calibration/CamCalib.json')
     # scene = create_scene()
     #
     # height_img = 640
@@ -58,7 +59,7 @@ if __name__ == '__main__':
     #
     #     sleep(0.01)
 
-    PoseMeasurerFromCam = PoseMeasurerFromCam('CamCalib.json')
+    PoseMeasurerFromCam = PoseMeasurerFromCam('camera_calibration/CamCalib.json')
     while True:
         try:
             corners, ids, rvecs, tvecs, image = PoseMeasurerFromCam.get_pose_markers_from_cam()
