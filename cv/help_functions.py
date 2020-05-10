@@ -55,4 +55,4 @@ def mv_avg_filt(arr, new_elem):
 
 
 if __name__ == "__main__":
-    get_marker_file(3)
+    get_marker_file(5)
